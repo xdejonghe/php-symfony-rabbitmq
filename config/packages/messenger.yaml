@@ -1,0 +1,109 @@
+framework:
+    messenger:
+        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
+        # failure_transport: failed
+
+        transports:
+            # producer
+            job-direct1-transport:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    exchange:
+                        name: jobs
+                        type: direct
+                    queues:
+                        job-direct1: ~
+
+            # producer
+            job-direct2-transport:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    exchange:
+                        name: jobs
+                        type: direct
+                    queues:
+                        job-direct2: ~
+
+            # producer
+            job-direct-keys-transport:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    exchange:
+                        name: job-direct-keys
+                        type: direct
+                    queues:
+                        job-keyA:
+                            binding_keys:
+                                - jobA
+                        job-keyB:
+                            binding_keys:
+                                - jobB
+            # producer
+            job-fanout:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/local'
+                options:
+                    exchange:
+                        name: job-fanout
+                        type: fanout
+
+            # consumer
+            job-fanout-consumer:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/local'
+                options:
+                    queues:
+                        job-direct1: ~
+                        job-direct2: ~
+
+        #            job-pubsub:
+#                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+#                options:
+#                    exchange:
+#                        name: jobs-pubsub
+#                        type: fanout
+#
+#
+#            jobs-keys-transport:
+#                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+#                options:
+#                    exchange:
+#                        name: jobs-keys
+#                        type: direct
+#                    queues:
+#                        jobA:
+#                            binding_keys:
+#                                - jobA
+#                        jobB:
+#                            binding_keys:
+#                                - jobB
+#            jobs-keys-pubsub-transport:
+#                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+#                options:
+#                    exchange:
+#                        name: jobs-keys
+#                        type: direct
+#                    queues:
+#                        all:
+#                            binding_keys:
+#                                - sms
+#                                - email
+#            job1:
+#
+#            job2:
+#
+#            jobs-pubsub:
+#                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+#                options:
+#                    exchange:
+#                        name: jobs-pubsub
+#                        type: fanout
+
+        routing:
+            # Route your messages to the transports
+            # 'App\Message\YourMessage': async
+            'App\Message\Direct\JobDirect': job-fanout
+            'App\Message\Direct\ConsumerFanoutMessage':  job-fanout-consumer
+            'App\Message\Direct\JobDirect1Message': job-direct1-transport
+            'App\Message\Direct\JobDirect2Message': job-direct2-transport
+            'App\Message\Keys\JobKeyAMessage':  job-direct-keys-transport
+            'App\Message\Keys\JobKeyBMessage':  job-direct-keys-transport
+
